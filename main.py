@@ -20,8 +20,6 @@ from telegram.ext.dispatcher import run_async
 from configs import Config
 
 
-
-
 def main():
     updater = Updater(Config.tokenbot)
     dp = updater.dispatcher
