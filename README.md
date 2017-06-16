@@ -24,7 +24,7 @@ Exemplo:</p>
 
 <p>Caso esteja afim de dar um fork, precisará realizar algumas tarefas:</p>
 <p>1. Criar um arquivo praw.ini com as seguintes especificações: <br>
-<code>[DEFAULT]
+<pre><code>[DEFAULT]
 # A boolean to indicate whether or not to check for package updates.
 check_for_updates=True
 
@@ -45,6 +45,6 @@ username=Username<br>
 client_id=Clientid<br>
 password=Password<br>
 client_secret=ClientSecret<br>
-</code></p>
+</code></pre></p>
 
 <p>Não esqueça de registrar seu script para adquirir a autentiação do <a href=https://github.com/reddit/reddit/wiki/OAuth2>Reddit<a> para pegar os dados e preenche-los no praw.ini
