@@ -17,3 +17,34 @@ Exemplo:</p>
 <p>pontos|subreddit|título<br>
 |Comments: link<br>
 |Link da thread: link</p>
+
+
+------------------------
+## Informações relevantes
+
+<p>Caso esteja afim de dar um fork, precisará realizar algumas tarefas:</p>
+<p>1. Criar um arquivo praw.ini com as seguintes especificações: <br>
+<pre><code>[DEFAULT]
+# A boolean to indicate whether or not to check for package updates.
+check_for_updates=True
+
+comment_kind=t1<br>
+message_kind=t4<br>
+redditor_kind=t2<br>
+submission_kind=t3<br>
+subreddit_kind=t5<br>
+
+oauth_url=https://oauth.reddit.com
+
+reddit_url=https://www.reddit.com
+
+short_url=https://redd.it
+
+[redditbot01]<br>
+username=Username<br>
+client_id=Clientid<br>
+password=Password<br>
+client_secret=ClientSecret<br>
+</code></pre></p>
+
+<p>Não esqueça de registrar seu script para adquirir a autentiação do <a href=https://github.com/reddit/reddit/wiki/OAuth2>Reddit<a> para pegar os dados e preenche-los no praw.ini
