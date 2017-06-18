@@ -16,6 +16,21 @@ def start(bot, update):
     bot.sendMessage(update.message.chat_id, text=msgg)
 
 
+def funcnumreadable(nums):
+    """
+    funcao para colocar o numero de upvotes em formato
+    human readable
+    :param nums: o numero a ser transformado
+    :return: o numero transformado
+    """
+    dictnumabbr = {0 : '', 3 : 'k', 6 : 'M'}
+    numtimes = 0
+    while abs(nums) >= 1000:
+        numtimes += 3
+        nums /= 1000
+    return str(round(nums,1)) + dictnumabbr[numtimes]
+
+
 def funcsort(tosortlist):
     """
     funcao para realizar a separacao entre o que eh numero e o que nao eh para ordenar de forma decrescente
@@ -38,7 +53,7 @@ def sortingdec(notsortedlist):
 def selectsubreddits(bot, update, subrddts):
     """
     funcao que lida com a procura pelos hot subreddits que possuam 5000+ pontos (ups)
-    organiza em uma lista na forma ups | subreddit | titulo (ate 110 chars, se nao coloca reticencias).
+    organiza em uma lista na forma ups | subreddit | titulo .
     verifica caso tenha mais de um subreddit procurando pelas ;, se achar, faz o processo pra todos.
     verifica se existe algum subreddit invalido, se existe algum que nao possui nenhum hot 5000+.
     :param bot: argumento da classe do bot do telegram
@@ -54,55 +69,31 @@ def selectsubreddits(bot, update, subrddts):
     valid = False
     msgg = u'Pesquisando! Só um momento... :d'
     bot.sendMessage(update.message.chat_id, text=msgg)
-    if ";" in subrddts:
-        for wordkeysbrddt in subrddts.split(";"):
-            try:
-                sub1 = reddit.subreddit(wordkeysbrddt)
-                print(sub1.fullname)
-            except Exception:
-                valid = False
-                listarddt = []
-                listarddt.append(wordkeysbrddt)
-
-            else:
-                for subs in reddit.subreddit(wordkeysbrddt).hot():
-                    if vars(subs)['ups'] >= 5000:
-                        ups = str(vars(subs)['ups'])
-                        subreddit = str(vars(subs)['subreddit'])
-                        titulorddt = (vars(subs)['title'] if len(vars(subs)['title']) <= 110 else vars(subs)['title'][:108] + '...')
-                        commentrddt = 'redd.it/' + vars(subs)['name'].split('_')[1]
-                        linkrddt = '' + vars(subs)['url']
-                        print(ups + subreddit + commentrddt)
-                        listarddt.append(ups + ' | ' + subreddit + ' | ' + titulorddt + '\n|Comments: ' + commentrddt + ' |Link: ' + linkrddt)
-                        valid = True
-                        contadorzinho += 1
-                if contadorzinho == 0:
-                    sbrddtsfora.append(wordkeysbrddt)
-                else:
-                    contadorzinho = 0
-
-    else:
+    for wordkeysbrddt in subrddts.split(";"):
         try:
-            sub1 = reddit.subreddit(subrddts)
+            sub1 = reddit.subreddit(wordkeysbrddt)
             print(sub1.fullname)
         except Exception:
             valid = False
             listarddt = []
-            listarddt.append(subrddts)
+            listarddt.append(wordkeysbrddt)
         else:
-            for subs in reddit.subreddit(subrddts).hot():
+            for subs in reddit.subreddit(wordkeysbrddt).hot():
                 if vars(subs)['ups'] >= 5000:
+                    print('deu up?')
                     ups = str(vars(subs)['ups'])
                     subreddit = str(vars(subs)['subreddit'])
-                    titulorddt = (vars(subs)['title'] if len(vars(subs)['title']) <= 110 else vars(subs)['title'][:108] + '...')
+                    print(subreddit)
+                    titulorddt = (vars(subs)['title'])
                     commentrddt = 'redd.it/' + vars(subs)['name'].split('_')[1]
                     linkrddt = '' + vars(subs)['url']
                     print(ups + subreddit + commentrddt)
-                    listarddt.append(ups + ' | ' + subreddit + ' | ' + titulorddt + '\n|Comments: ' + commentrddt + ' |Link: ' + linkrddt)
+                    listarddt.append('Subreddit: `' + subreddit + '`\nUpvotes: `' + ups + '`\nTítulo: `' + titulorddt + '`\nComments: ' + commentrddt + '\nLink: ' + linkrddt)
                     valid = True
                     contadorzinho += 1
             if contadorzinho == 0:
-                sbrddtsfora.append(subrddts)
+                valid = True
+                sbrddtsfora.append(wordkeysbrddt)
             else:
                 contadorzinho = 0
     return listarddt, valid, sbrddtsfora
@@ -120,8 +111,7 @@ def nadaprafazer(bot, update):
     """
     msgsbrddts = (update.message.text).split()
     print(update.message.text)
-    print(msgsbrddts)
-    if len(msgsbrddts) > 1:
+    if len(msgsbrddts) == 2:
         if msgsbrddts[1] == '':
             msgg = u'Precisa enviar algo para eu pesquisar! :('
             bot.sendMessage(update.message.chat_id, text=msgg)
@@ -135,15 +125,18 @@ def nadaprafazer(bot, update):
                 newlistarddt = sortingdec(listarddt)
                 msgg = u'Pronto! Aqui vai a lista:\n\n'
                 for itenslista in newlistarddt:
-                    msgg += str(itenslista) + '\n-----\n'
+                    itemlistaformat = itenslista.replace(re.search('(\d+)',itenslista).group(0), funcnumreadable(int(re.search('(\d+)',itenslista).group(0))))
+                    msgg += str(itemlistaformat) + '\n-----\n'
                 if len(subdefora) > 0:
-                    msgg += u'Aqui estão os resultados, mas não houve nenhuma ' \
+                    msgg += u'Não houve nenhuma ' \
                             u'thread com mais de 5000 para esse' + ('s' if len(subdefora) > 1 else '') + ' aqui : ' + ' '.join(subdefora)
-            bot.sendMessage(update.message.chat_id, text=msgg)
-    else:
+            bot.sendMessage(update.message.chat_id, text=msgg, parse_mode="Markdown")
+    elif len(msgsbrddts) <2:
         msgg = u'Precisa enviar algo para eu pesquisar! :('
         bot.sendMessage(update.message.chat_id, text=msgg)
-
+    elif len(msgsbrddts) > 2:
+        msgg = u'O formato da pesquisa precisa ser na forma: `/nadaprafazer cheese;physics`'
+        bot.sendMessage(update.message.chat_id, text=msgg, parse_mode="Markdown")
 
 def main():
     """
