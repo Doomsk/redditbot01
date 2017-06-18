@@ -7,10 +7,10 @@ Este será (um dia) o maior bot do telegram, para honrar seu legado deixado no m
 
 ## Reddit threads 5000+
 
-<p>Essa função retorna todos os hot threads dos desejados subreddits pelo comando <b><i>/NadaPraFazer</i></b>. 
+<p>Essa função retorna todos os hot threads dos desejados subreddits pelo comando <b><i>/nadaprafazer</i></b>. 
 Exemplo:</p>
 
-<code><b>/NadaPraFazer</b> cheese;physics</code>
+<code><b>/nadaprafazer</b> cheese;physics</code>
 
 <p>Ele retorna os hot threads (que possuírem 5000+ pontos) com as seguintes informações:</p>
 
