@@ -4,3 +4,5 @@ configs.py
 praw.ini
 .idea/**
 Untitled.ipynb
+.ipynb_checkpoint/**
+__pycache__/**
