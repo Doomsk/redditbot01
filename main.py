@@ -1,80 +1,113 @@
-import sys
-import platform
-import time
-import asyncio
-import os
-import re
-import json
 import praw
-from datetime import datetime
-import requests
-import telegram
-from telegram import LabeledPrice, ShippingOption
-from telegram.ext import Updater, CommandHandler, MessageHandler
-from telegram import ParseMode, Message, Chat, InlineKeyboardMarkup, \
-    InlineKeyboardButton, ReplyKeyboardMarkup, InlineQueryResultPhoto
-from telegram.ext import InlineQueryHandler, ChosenInlineResultHandler, \
-    CommandHandler, MessageHandler, Filters, CallbackQueryHandler, \
-    PreCheckoutQueryHandler, ShippingQueryHandler
-from telegram.ext.dispatcher import run_async
+import logging
+from telegram.ext import Updater, CommandHandler
 from configs import Config
 
 
 def start(bot, update):
     usrnm = (update.message.from_user.first_name).split(' ')[0 if update.message.from_user.first_name[0] != ' ' else 1]
-    msgg = u'E aí, ' + usrnm + u'!'
+    msgg = u'E aí, ' + usrnm + u'! Dá um /nadaprafazer <subreddit> e procure pelas hot threads do reddit! :>'
     bot.sendMessage(update.message.chat_id, text=msgg)
 
-def geralista(sbrdt):
-    listarddt = []
-    for subs in reddit.subreddit(sbrdt).hot():
-        if vars(subs)['ups'] >= 5000:
-            ups = str(vars(subs)['ups'])
-            subreddit = str(vars(subs)['subreddit'])
-            titulorddt = (vars(subs)['title'] if len(vars(subs)['title']) <= 110 else vars(subs)['title'][:108] + '...')
-            commentrddt = '[Comments](https://www.reddit.com' + vars(subs)['permalink'] + ')'
-            linkrddt = '[Link]('+ vars(subs)['url'] + ')'
-            listarddt.append((ups, subreddit, titulorddt, commentrddt, linkrddt))
-    return listarddt
 
 def selectsubreddits(bot, update, subrddts):
+    contadorzinho = 0
+    sbrddtsfora = []
     listarddt = []
+    valid = False
+    msgg = u'Pesquisando! Só um momento... :d'
+    bot.sendMessage(update.message.chat_id, text=msgg)
     if ";" in subrddts:
         for wordkeysbrddt in subrddts.split(";"):
             try:
                 sub1 = reddit.subreddit(wordkeysbrddt)
                 print(sub1.fullname)
             except Exception:
-                msgg = u"Esse subreddit " + wordkeysbrddt + u" não existe! (eu acho)\n" \
-                                                            u"Dá uma conferida se todos estão certos antes de mandar de novo >:)"
-                bot.sendMessage(update.message.chat_id, text=msgg)
+                valid = False
+                listarddt = []
+                listarddt.append(wordkeysbrddt)
 
             else:
-                listarddt.append(geralista(wordkeysbrddt))
+                for subs in reddit.subreddit(wordkeysbrddt).hot():
+                    if vars(subs)['ups'] >= 5000:
+                        ups = str(vars(subs)['ups'])
+                        subreddit = str(vars(subs)['subreddit'])
+                        titulorddt = (vars(subs)['title'] if len(vars(subs)['title']) <= 110 else vars(subs)['title'][:108] + '...')
+                        commentrddt = 'redd.it/' + vars(subs)['name'].split('_')[1]
+                        linkrddt = '' + vars(subs)['url']
+                        print(ups + subreddit + commentrddt)
+                        listarddt.append(ups + ' | ' + subreddit + ' | ' + titulorddt + '\n|Comments: ' + commentrddt + ' |Link: ' + linkrddt)
+                        valid = True
+                        contadorzinho += 1
+                if contadorzinho == 0:
+                    sbrddtsfora.append(wordkeysbrddt)
+                else:
+                    contadorzinho = 0
+
     else:
         try:
             sub1 = reddit.subreddit(subrddts)
             print(sub1.fullname)
         except Exception:
-            msgg = u"Esse subreddit " + subrddts + u" não existe! (eu acho)\n" \
-                                                        u"Dá uma conferida se todos estão certos antes de mandar de novo >:)"
-            bot.sendMessage(update.message.chat_id, text=msgg)
+            valid = False
+            listarddt = []
+            listarddt.append(subrddts)
         else:
-            listarddt.append(geralista(subrddts))
-    return listarddt
+            for subs in reddit.subreddit(subrddts).hot():
+                if vars(subs)['ups'] >= 5000:
+                    ups = str(vars(subs)['ups'])
+                    subreddit = str(vars(subs)['subreddit'])
+                    titulorddt = (vars(subs)['title'] if len(vars(subs)['title']) <= 110 else vars(subs)['title'][:108] + '...')
+                    commentrddt = 'redd.it/' + vars(subs)['name'].split('_')[1]
+                    linkrddt = '' + vars(subs)['url']
+                    print(ups + subreddit + commentrddt)
+                    listarddt.append(ups + ' | ' + subreddit + ' | ' + titulorddt + '\n|Comments: ' + commentrddt + ' |Link: ' + linkrddt)
+                    valid = True
+                    contadorzinho += 1
+            if contadorzinho == 0:
+                sbrddtsfora.append(subrddts)
+            else:
+                contadorzinho = 0
+    return listarddt, valid, sbrddtsfora
 
 
 def nadaprafazer(bot, update):
-    listarddt = selectsubreddits(bot=bot, update=update, subrddts=update.message.text)
-    msgg = u'Aqui vai a lista!\n'
-    for ups, subreddit, titulo, comments, link in listarddt:
-        msgg += ups + '|' + subreddit + '|' + titulo + '\n|Comments: ' + comments + '|Link: ' + link + '\n-----\n'
-    bot.sendMessage(update.message.chat_id, text=msgg, parse_mode=telegram.ParseMode.MARKDOWN)
+    msgsbrddts = (update.message.text).split()
+    print(update.message.text)
+    print(msgsbrddts)
+    if len(msgsbrddts) > 1:
+        if msgsbrddts[1] == '':
+            msgg = u'Precisa enviar algo para eu pesquisar! :('
+            bot.sendMessage(update.message.chat_id, text=msgg)
+        else:
+            listarddt, valid, subdefora = selectsubreddits(bot=bot, update=update, subrddts=msgsbrddts[1])
+            if not valid:
+                msgg = u'' \
+                       u'Pelo menos um subreddit, tipo esse ' + listarddt[0] + u', não existe! (eu acho)\n' \
+                                                          u'Dá uma conferida se todos estão certos antes de mandar de novo >:)'
+            else:
+                print(len(listarddt))
+                msgg = u'Pronto! Aqui vai a lista:\n\n'
+                for itenslista in listarddt:
+                    msgg += itenslista + '\n-----\n'
+                if len(subdefora) > 0:
+                    msgg += u'Até estão os resultados, mas não houve nenhuma ' \
+                            u'thread com mais de 5000 para esse' + ('s' if len(subdefora) > 1 else '') + ' aqui : ' + ' '.join(subdefora)
+            bot.sendMessage(update.message.chat_id, text=msgg)
+    else:
+        msgg = u'Precisa enviar algo para eu pesquisar! :('
+        bot.sendMessage(update.message.chat_id, text=msgg)
 
 def main():
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+    logger = logging.getLogger('prawcore')
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
     updater = Updater(Config.tokenbot)
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("nadaprafazer", nadaprafazer))
     dp.add_handler(CommandHandler("NadaPraFazer", nadaprafazer))
     #dp.add_handler(MessageHandler([Filters.text], testezinho))
     updater.start_polling()
@@ -82,5 +115,5 @@ def main():
 
 
 if __name__ == '__main__':
-    reddit = praw.Reddit(user_agent = 'redditbotthread')
+    reddit = praw.Reddit('redditbot01', user_agent = 'redditbotthread')
     main()
