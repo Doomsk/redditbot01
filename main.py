@@ -88,7 +88,7 @@ def selectsubreddits(bot, update, subrddts):
                     commentrddt = 'redd.it/' + vars(subs)['name'].split('_')[1]
                     linkrddt = '' + vars(subs)['url']
                     print(ups + subreddit + commentrddt)
-                    listarddt.append('Subreddit: `' + subreddit + '`\nUpvotes: `' + ups + '`\nTítulo: `' + titulorddt + '`\nComments: ' + commentrddt + '\nLink: ' + linkrddt)
+                    listarddt.append('Subreddit: `' + subreddit + '`\nUpvotes: `' + ups + '`\nTítulo: `' + titulorddt + '`\nComments: ' + commentrddt + '\nLink: [link](' + linkrddt +')')
                     valid = True
                     contadorzinho += 1
             if contadorzinho == 0:
